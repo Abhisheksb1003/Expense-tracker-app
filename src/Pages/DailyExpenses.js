@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment,useEffect, useRef, useState } from "react";
 import { Card, Container, Row, Col, Button, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -7,6 +7,24 @@ const DailyExpenses = () => {
   const enetredAmount = useRef();
   const enetredDesc = useRef();
   const EnetredCategory = useRef();
+
+  useEffect(() => {
+    const getdata = async () => {
+      const response = await fetch(
+        "https://expensetracker-7313d-default-rtdb.firebaseio.com/expenses.json"
+      );
+      const firebasedata = await response.json();
+
+      // Convert the object to an array
+      const dataArray = Object.entries(firebasedata).map(([id, data]) => ({
+        id,
+        ...data,
+      }));
+
+      setExpense(dataArray);
+    };
+    getdata();
+  }, []);
 
   const formsubmitHnadler = (e) => {
     e.preventDefault();
@@ -19,7 +37,27 @@ const DailyExpenses = () => {
       description: description,
       category: category,
     };
-    console.log(data);
+
+    fetch(
+      "https://expensetracker-7313d-default-rtdb.firebaseio.com/expenses.json",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          amount: amount,
+          description: description,
+          category: category,
+        }),
+        headers: { "Content-Type": "application/json" },
+      }
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     setExpense((prevdata) => [...prevdata, data]);
   };
