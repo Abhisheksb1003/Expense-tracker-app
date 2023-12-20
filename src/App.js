@@ -4,8 +4,8 @@ import Signuppage from './Components/Signuppage';
 import { Route, Redirect, Switch } from "react-router-dom";
 import Profilepage from './Components/Profilepage';
 import Header from './UI/Header';
-import Home from './Pages/Home';
 import Forgotpassword from './Pages/Forgotpassword';
+import DailyExpenses from './Pages/DailyExpenses';
 
 function App() {
   return (
@@ -19,7 +19,7 @@ function App() {
           <Signuppage />
         </Route>
         <Route path="/home">
-          <Home />
+          <DailyExpenses />
         </Route>
         <Route path="/profile">
           <Profilepage />
