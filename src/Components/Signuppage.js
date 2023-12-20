@@ -3,6 +3,7 @@ import { Container, Row, Col, Card } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import React, { Fragment, useRef, useState } from "react";
 import {useHistory} from 'react-router-dom'
+import { NavLink } from "react-router-dom";
 
 const Signuppage = () => {
   const enetredemail = useRef();
@@ -10,21 +11,17 @@ const Signuppage = () => {
   const renenterdpwd = useRef();
   const [isLogin, setIsLogin] = useState(true);
   const history = useHistory();
-
   const onClickHandler = () => {
     setIsLogin((prevvalue) => !prevvalue);
   };
-
   const submitHandler = (e) => {
     e.preventDefault();
     const email = enetredemail.current.value;
     const pwd = enetredPwd.current.value;
     let renterdpwd; // Declare renterdpwd outside the block
-
     if (!isLogin) {
       renterdpwd = renenterdpwd.current.value; // Assign value inside the block
     }
-
     if (isLogin) {
       fetch(
         "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyA20QgzIbGGBJE2GjAckzUje0TsQ023o2M",
@@ -52,7 +49,6 @@ const Signuppage = () => {
           let idToken = data.idToken;
           localStorage.setItem("idToken", idToken);
         })
-
         .catch((err) => {
           alert(err);
         });
@@ -124,7 +120,6 @@ const Signuppage = () => {
                     className="form-control mb-2"
                     ref={enetredPwd}
                   ></input>
-
                   {!isLogin && (
                     <input
                       type="password"
@@ -134,7 +129,17 @@ const Signuppage = () => {
                       {...(!isLogin ? { required: true } : { required: false })}
                     ></input>
                   )}
-
+                  {isLogin && (
+                    <div>
+                      <NavLink
+                        to="/forgotpwd"
+                        style={{ fontSize: "18px", color: "yellow" }}
+                        className="text-center"
+                      >
+                        Forgot Password?
+                      </NavLink>
+                    </div>
+                  )}
                   <Button type="submit" variant="primary" block>
                     {isLogin ? "Login" : "create Account"}
                   </Button>
