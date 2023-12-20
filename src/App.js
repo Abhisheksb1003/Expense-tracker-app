@@ -4,8 +4,7 @@ import Signuppage from './Components/Signuppage';
 import { Route, Redirect, Switch } from "react-router-dom";
 import Profilepage from './Components/Profilepage';
 import Header from './UI/Header';
-
-
+import Home from './Pages/Home';
 
 function App() {
   return (
@@ -19,7 +18,7 @@ function App() {
           <Signuppage />
         </Route>
         <Route path="/home">
-          <Header />
+          <Home />
         </Route>
         <Route path='/profile'>
           <Profilepage/>
