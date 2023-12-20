@@ -10,21 +10,17 @@ const Signuppage = () => {
   const renenterdpwd = useRef();
   const [isLogin, setIsLogin] = useState(true);
   const history = useHistory();
-
   const onClickHandler=()=>{
     setIsLogin((prevvalue)=>!prevvalue);
   }
-
   const submitHandler = (e) => {
     e.preventDefault();
     const email = enetredemail.current.value;
     const pwd = enetredPwd.current.value;
     let renterdpwd; // Declare renterdpwd outside the block
-
   if (!isLogin) {
     renterdpwd = renenterdpwd.current.value; // Assign value inside the block
   }
-
     if (isLogin) {
       fetch(
         "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyA20QgzIbGGBJE2GjAckzUje0TsQ023o2M",
@@ -45,7 +41,13 @@ const Signuppage = () => {
           } else {
             throw new Error("error");
           }
+          return res.json();
+        }).then((data)=>{
+          console.log(data);
+          let idToken = data.idToken
+          localStorage.setItem('idToken',idToken )
         })
+
         .catch((err) => {
           alert(err);
         });
@@ -110,7 +112,6 @@ const Signuppage = () => {
                     className="form-control mb-2"
                     ref={enetredemail}
                   ></input>
-
                   <label>Password</label>
                   <input
                     type="password"
@@ -118,7 +119,6 @@ const Signuppage = () => {
                     className="form-control mb-2"
                     ref={enetredPwd}
                   ></input>
-
                  {!isLogin &&<input
                     type="password"
                     placeholder="Re-enter Password"
@@ -126,13 +126,12 @@ const Signuppage = () => {
                     ref={renenterdpwd}
                     {...(!isLogin ? { required: true } : {required: false})}
                   ></input>}
-
                   <Button type="submit" variant="primary" block>
                   {isLogin ? "Login" : "create Account"}
                   </Button>
                 </form>
               </Card.Body>
-              <Button onClick={onClickHandler} className="mt-3" variant="dark">{isLogin ? 'Dont Have an account? Click Here': 'Have an account? click here to login'} </Button>
+              <Button onClick={onClickHandler}  variant="dark">{isLogin ? 'Dont Have an account? Click Here': 'Have an account? click here to login'} </Button>
             </Card>
           </Col>
         </Row>
