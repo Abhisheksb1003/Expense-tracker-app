@@ -7,7 +7,6 @@ const DailyExpenses = () => {
   const enetredAmount = useRef();
   const enetredDesc = useRef();
   const EnetredCategory = useRef();
-
   useEffect(() => {
     const getdata = async () => {
       const response = await fetch(
@@ -15,13 +14,15 @@ const DailyExpenses = () => {
       );
       const firebasedata = await response.json();
 
-      // Convert the object to an array
-      const dataArray = Object.entries(firebasedata).map(([id, data]) => ({
-        id,
-        ...data,
-      }));
+      if (firebasedata) {
+        // Convert the object to an array
+        const dataArray = Object.entries(firebasedata).map(([id, data]) => ({
+          id,
+          ...data,
+        }));
 
-      setExpense(dataArray);
+        setExpense(dataArray);
+      }
     };
     getdata();
   }, []);
@@ -29,13 +30,14 @@ const DailyExpenses = () => {
   const formsubmitHnadler = (e) => {
     e.preventDefault();
 
-    let amount = enetredAmount.current.value;
-    let description = enetredDesc.current.value;
-    let category = EnetredCategory.current.value;
+    let entamount = enetredAmount.current.value;
+    let entdescription = enetredDesc.current.value;
+    let entcategory = EnetredCategory.current.value;
+
     const data = {
-      amount: amount,
-      description: description,
-      category: category,
+      amount: entamount,
+      description: entdescription,
+      category: entcategory,
     };
 
     fetch(
@@ -43,9 +45,9 @@ const DailyExpenses = () => {
       {
         method: "POST",
         body: JSON.stringify({
-          amount: amount,
-          description: description,
-          category: category,
+          amount: entamount,
+          description: entdescription,
+          category: entcategory,
         }),
         headers: { "Content-Type": "application/json" },
       }
@@ -58,8 +60,51 @@ const DailyExpenses = () => {
       .catch((err) => {
         console.log(err);
       });
-
     setExpense((prevdata) => [...prevdata, data]);
+  };
+
+  const deleteHandler = (id) => {
+    fetch(
+      `https://expensetracker-7313d-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    )
+      .then((res) => {
+        if (res.ok) {
+          alert("item deleted successfully");
+        } else {
+          throw new Error("error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const editHandler = (data) => {
+    enetredAmount.current.value = data.amount;
+    enetredDesc.current.value = data.description;
+    EnetredCategory.current.value = data.category;
+
+    setExpense((prevExpense) =>
+      prevExpense.filter((item) => item.id !== data.id)
+    );
+
+    fetch(
+      `https://expensetracker-7313d-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      {
+        method: "DELETE",
+      }
+    )
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("error");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -108,23 +153,42 @@ const DailyExpenses = () => {
           </Col>
           <Col>
             <Card style={{ backgroundColor: "grey" }}>
-              <Table striped bordered hover variant="dark">
+              <Table striped bordered hover responsive variant="dark">
                 <thead>
-                  <tr>
+                  <tr className="text-center">
                     <th>Amount</th>
                     <th>Description</th>
                     <th>Category</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {expense.map((data, index) => (
-                    <tr key={index}>
+
+                {expense.map((data, index) => (
+                  <tbody>
+                    <tr key={index} className="text-center">
                       <td>{data.amount}</td>
                       <td>{data.description}</td>
                       <td>{data.category}</td>
+                      <td>
+                        <Button
+                          onClick={() => editHandler(data)}
+                          variant="info"
+                        >
+                          Edit
+                        </Button>
+                      </td>
+                      <td>
+                        <Button
+                          onClick={() => deleteHandler(data.id)}
+                          variant="danger"
+                        >
+                          Delete
+                        </Button>
+                      </td>
                     </tr>
-                  ))}
-                </tbody>
+                  </tbody>
+                ))}
               </Table>
             </Card>
           </Col>
