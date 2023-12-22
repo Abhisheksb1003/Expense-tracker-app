@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
 const initialState = { token: "", isLoggedin: false };
-
 const authSlice = createSlice({
   name: "auth",
   initialState: initialState,
@@ -15,6 +13,9 @@ const authSlice = createSlice({
       state.token = "";
       state.isLoggedin = false;
       localStorage.removeItem("idToken");
+    },
+    rerenderlogin(state) {
+      state.isLoggedin = true;
     },
   },
 });
