@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 
 const Forgotpassword = () => {
   const [emailSent, setEmailSent] = useState(false);
-   const history= useHistory()
+  const history = useHistory();
   const enetredemail = useRef();
 
   const ressetHandler = (e) => {
@@ -38,7 +38,7 @@ const Forgotpassword = () => {
   };
 
   const onClickHandler = () => {
-    history.replace('/login')
+    history.replace("/login");
   };
   return (
     <Fragment>
@@ -94,5 +94,4 @@ const Forgotpassword = () => {
     </Fragment>
   );
 };
-
 export default Forgotpassword;
