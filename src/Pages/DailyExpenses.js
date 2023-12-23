@@ -1,9 +1,8 @@
 import React, { Fragment,useEffect, useRef, useState } from "react";
 import { Card, Container, Row, Col, Button, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 import { useDispatch, useSelector } from "react-redux";
-import { expenseAction } from "../../Store/ExpenseSlice";
+import { expenseAction } from "../Store/ExpenseSlice";
 
 const DailyExpenses = () => {
   const [expense, setExpense] = useState([]);
@@ -17,29 +16,46 @@ const DailyExpenses = () => {
 
   useEffect(() => {
     const getdata = async () => {
-      const response = await fetch(
-        "https://expensetracker-9c3dc-default-rtdb.firebaseio.com/expenses.json"
-      );
-      const firebasedata = await response.json();
-      if (firebasedata) {
-        // Convert the object to an array
-        const dataArray = Object.entries(firebasedata).map(([id, data]) => ({
-          id,
-          ...data,
-        }));
+      try {
+        let email = localStorage.getItem("email");
 
-        const greaterthan10000 = dataArray.some((item) => item.amount >= 10000);
-
-        if (greaterthan10000) {
-          dispatch(expenseAction.updatePremium());
+        if (!email) {
+          console.error('Email not found in localStorage');
+          return;
         }
 
-        setExpense(dataArray);
-        dispatch(expenseAction.saveExpense(dataArray));
+        const response = await fetch(
+          `https://expensetracker-7313d-default-rtdb.firebaseio.com/${email}.json`
+        );
+        const firebasedata = await response.json();
+
+        if (firebasedata) {
+          // Convert the object to an array
+          const dataArray = Object.entries(firebasedata).map(([id, data]) => ({
+            id,
+            ...data,
+          }));
+
+          const greaterthan10000 = dataArray.some((item) => item.amount >= 10000);
+
+          if (greaterthan10000) {
+            dispatch(expenseAction.updatePremium());
+          }
+
+          setExpense(dataArray);
+          dispatch(expenseAction.saveExpense(dataArray));
+
+          console.log('useEffect - dataArray:', dataArray);
+        }
+      } catch (error) {
+        console.error('Error in useEffect:', error);
       }
     };
+
     getdata();
   }, []);
+
+
   const formsubmitHnadler = (e) => {
     e.preventDefault();
     let entamount = enetredAmount.current.value;
@@ -50,8 +66,9 @@ const DailyExpenses = () => {
       description: entdescription,
       category: entcategory,
     };
+    let email = localStorage.getItem("email");
     fetch(
-      "https://expensetracker-9c3dc-default-rtdb.firebaseio.com/expenses.json",
+      `https://expensetracker-7313d-default-rtdb.firebaseio.com/${email}.json`,
       {
         method: "POST",
         body: JSON.stringify({
@@ -72,20 +89,21 @@ const DailyExpenses = () => {
         return res.json();
       })
       .then((data) => {
-        const activatePremium = data.some((item) => item.amount >= 10000);
 
-        if (activatePremium) {
-          dispatch(expenseAction.updatePremium());
-        }
       })
       .catch((err) => {
         console.log(err);
       });
     setExpense((prevdata) => [...prevdata, data]);
+    const activatePremium = expense.map((item) => item.amount > 10000);
+    if (activatePremium) {
+      dispatch(expenseAction.updatePremium());
+    }
   };
   const deleteHandler = (id) => {
+    let email = localStorage.getItem("email");
     fetch(
-      `https://expensetracker-9c3dc-default-rtdb.firebaseio.com/expenses/${id}.json`,
+      `https://expensetracker-7313d-default-rtdb.firebaseio.com/${email}/${id}.json`,
       {
         method: "DELETE",
       }
@@ -93,13 +111,16 @@ const DailyExpenses = () => {
       .then((res) => {
         if (res.ok) {
           alert("item deleted successfully");
-          dispatch(expenseAction.deleteExpense(id));
-          setExpense((prevExpense) =>
-            prevExpense.filter((item) => item.id !== id)
-          );
+          return res.json();
         } else {
           throw new Error("error");
         }
+      })
+      .then(() => {
+        dispatch(expenseAction.deleteExpense(id));
+        setExpense((prevExpense) =>
+          prevExpense.filter((item) => item.id !== id)
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -113,8 +134,9 @@ const DailyExpenses = () => {
       prevExpense.filter((item) => item.id !== data.id)
     );
     dispatch(expenseAction.deleteExpense(data.id));
+    let email = localStorage.getItem("email");
     fetch(
-      `https://expensetracker-9c3dc-default-rtdb.firebaseio.com/expenses/${data.id}.json`,
+      `https://expensetracker-7313d-default-rtdb.firebaseio.com/${email}/${data.id}.json`,
       {
         method: "DELETE",
       }
@@ -130,8 +152,9 @@ const DailyExpenses = () => {
   };
   const downlaodCSVHandler = () => {
     // Get all expense data from Firebase
+    let email = localStorage.getItem("email");
     fetch(
-      "https://expensetracker-9c3dc-default-rtdb.firebaseio.com/expenses.json"
+      `https://expensetracker-9c3dc-default-rtdb.firebaseio.com/${email}.json`
     )
       .then((response) => response.json())
       .then((firebasedata) => {
@@ -140,7 +163,6 @@ const DailyExpenses = () => {
             id,
             ...data,
           }));
-
           // Convert data array to CSV content
           const csvContent =
             "Amount,Description,Category\n" +
@@ -149,20 +171,16 @@ const DailyExpenses = () => {
                 (item) => `${item.amount},${item.description},${item.category}`
               )
               .join("\n");
-
           // Create a Blob with the CSV content
           const blob = new Blob([csvContent], { type: "text/csv" });
-
           // Create a download link
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
           a.download = "expenses.csv";
-
           // Append the download link to the document and trigger the download
           document.body.appendChild(a);
           a.click();
-
           // Clean up
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
@@ -172,7 +190,6 @@ const DailyExpenses = () => {
         console.error("Error fetching data from Firebase:", error);
       });
   };
-
   return (
     <Fragment>
       <div className={`${darkTheme ? "dark-theme" : "white-theme"}`}>
@@ -251,10 +268,9 @@ const DailyExpenses = () => {
                       <th>Delete</th>
                     </tr>
                   </thead>
-
                   {expense.map((data, index) => (
-                    <tbody>
-                      <tr key={index} className="text-center">
+                    <tbody key={data.id}>
+                      <tr className="text-center">
                         <td>{data.amount}</td>
                         <td>{data.description}</td>
                         <td>{data.category}</td>
@@ -283,7 +299,7 @@ const DailyExpenses = () => {
           </Row>
         </Container>
       </div>
-      <style jsx>{`
+      <style jsx="true">{`
         .dark-theme {
           background-color: #001f3f; /* Dark blue background color */
         }

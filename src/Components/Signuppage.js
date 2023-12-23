@@ -4,9 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React, { Fragment, useRef, useState } from "react";
 import {useHistory} from 'react-router-dom'
 import { NavLink } from "react-router-dom";
-
 import { useDispatch } from "react-redux";
-import { authActions } from "../../Store/Authslice";
+import { authActions } from "../Store/Authslice";
 
 const Signuppage = () => {
   const enetredemail = useRef();
@@ -14,9 +13,7 @@ const Signuppage = () => {
   const renenterdpwd = useRef();
   const [isLogin, setIsLogin] = useState(true);
   const history = useHistory();
-
   const dispatch = useDispatch();
-
   const onClickHandler = () => {
     setIsLogin((prevvalue) => !prevvalue);
   };
@@ -52,8 +49,12 @@ const Signuppage = () => {
         })
         .then((data) => {
           console.log(data);
-          let idToken = data.idToken;
-          dispatch(authActions.login(idToken));
+          let token = data.idToken;
+          let email = data.email; 
+          dispatch(authActions.login({ token, email }));
+          // Remove "@" and "." from the email address
+          // const updatedEmail = email.replace(/[@.]/g, "");
+          // localStorage.setItem("email", updatedEmail);
         })
 
         .catch((err) => {
@@ -147,7 +148,7 @@ const Signuppage = () => {
                       </NavLink>
                     </div>
                   )}
-                  <Button type="submit" variant="primary" block>
+                  <Button type="submit" variant="primary" block="true">
                     {isLogin ? "Login" : "create Account"}
                   </Button>
                 </form>

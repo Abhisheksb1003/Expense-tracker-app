@@ -3,11 +3,9 @@ import { Container, Navbar, Nav, Card,Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-
 import { useSelector, useDispatch } from "react-redux";
-import { authActions } from "../../Store/Authslice";
-
-import { Themeactions } from "../../Store/ThemeSlice";
+import { authActions } from "../Store/Authslice";
+import { Themeactions } from "../Store/ThemeSlice";
 import { useEffect } from "react";
 
 const Header = () => {
@@ -21,13 +19,12 @@ const Header = () => {
   console.log("btnpremium", btnpremium);
   //console.log("showlogin", isloggedin);
   //console.log('premium', premium)
-
   useEffect(() => {
     let id = localStorage.getItem("idToken");
     if (id) {
       dispatch(authActions.rerenderlogin());
     }
-  }, []);
+  }, [dispatch]);
   const verifiemailHandler = () => {
     fetch(
       "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyA20QgzIbGGBJE2GjAckzUje0TsQ023o2M",
@@ -57,16 +54,19 @@ const Header = () => {
     dispatch(authActions.logout());
     history.replace("/login");
   };
-
   const setPremiumHandler = () => {
     dispatch(Themeactions.setDarkTheme());
   };
   return (
     <Navbar bg="dark">
+  
       <Container className="d-flex ">
+     
         <Navbar.Brand className="text-white">
           Welcome To Expense Tracker
+          <h1>test</h1>
         </Navbar.Brand>
+        
         {isloggedin && (
           <Nav>
             <Card style={{ backgroundColor: "#ffc0cb", borderRadius: "20px" }}>
